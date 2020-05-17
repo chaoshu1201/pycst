@@ -1,0 +1,2 @@
+# Pycst - CST MWS Simulation and Optimization with Python
+Pycst is a python project used to control the simulation of CST MWS project, and post-process/analyse the result data in a programmatic way. It is also a powerful tool for optimisation of complex electromagnetic models by connecting CST MWS full-wave simulations to a variety of state-of-the-art optimisation algorithms. Furthermore, it bridges the gap between machine learning and the EM full-wave simulation.
