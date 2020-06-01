@@ -217,7 +217,7 @@ def func_group_data_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels, ncol=4, loc='lower center', prop={'size': 8})
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    # plt.show()
+    plt.show()
 
 
 def func_cst_radpat_cocx_subplot_show(np_theta, np_phi, pol_ind, ff_data_dir, ff_data_file_dic, nrow, ncol,
