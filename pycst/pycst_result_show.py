@@ -192,7 +192,7 @@ def func_group_data_show(data_plot_cfg_dic_lst, axes_cfg_dic, x_label, y_label, 
 
 
 def func_group_data_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol, x_label, y_label, sub_titles,
-                                 fig_title=None):
+                                 anno_text_lst=None, fig_title=None):
 
     # Create a figure
     fig, axs = plt.subplots(nrow, ncol)
@@ -212,6 +212,8 @@ def func_group_data_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol
         # Define appearance
         func_matlab_style(ax)
         ax.text(-25, -43, sub_titles[index], fontsize=11, fontweight='bold')
+        if anno_text_lst is not None:
+            ax.text(axes_cfg_dic['xlim'][0]+10, -5, anno_text_lst[index], fontsize=8)
         # ax.set_aspect('equal')
 
     handles, labels = ax.get_legend_handles_labels()
@@ -228,7 +230,7 @@ def func_cst_radpat_cocx_subplot_show(np_theta, np_phi, pol_ind, ff_data_dir, ff
     :param np_phi: number of sample points for phi, if step is 45deg, np_phi is 5
     :param pol_ind: 'LHCP', 'RHCP' or 'lin_dir'
     :param ff_data_dir: directory path which contains farfield data
-    :param ff_data_file_dic: a dictionary list of radiation patterns to be shown, shoud be like:
+    :param ff_data_file_dic: a dictionary list of radiation patterns to be shown, should be like:
     ff_data_file_dic = {'75 GHz': "farfield_(f=75)_[1].txt",
                         '85 GHz': "farfield_(f=85)_[1].txt",
                         '90 GHz': "farfield_(f=90)_[1].txt",
@@ -246,14 +248,18 @@ def func_cst_radpat_cocx_subplot_show(np_theta, np_phi, pol_ind, ff_data_dir, ff
     if pol_ind == 'LHCP':
         lable_lst = ['LHCP, ' + r'$\phi=0\degree$', 'LHCP, ' + r'$\phi=45\degree$',
                      'LHCP, ' + r'$\phi=90\degree$', 'RHCP, ' + r'$\phi=45\degree$']
+        unit_str = 'dBic'
     elif pol_ind == 'RHCP':
         lable_lst = ['RHCP, ' + r'$\phi=0\degree$', 'RHCP, ' + r'$\phi=45\degree$',
                      'RHCP, ' + r'$\phi=90\degree$', 'LHCP, ' + r'$\phi=45\degree$']
+        unit_str = 'dBic'
     else:
         lable_lst = ['Co-pol, ' + r'$\phi=0\degree$', 'Co-pol, ' + r'$\phi=45\degree$',
                      'Co-pol, ' + r'$\phi=90\degree$', 'Cx-pol, ' + r'$\phi=45\degree$']
+        unit_str = 'dBi'
 
     data_plot_cfg_dic_lst = []
+    anno_text_lst = []
     for freq_str, ff_file_name in ff_data_file_dic.items():
 
         # Parse the exported farfield data file
@@ -269,24 +275,25 @@ def func_cst_radpat_cocx_subplot_show(np_theta, np_phi, pol_ind, ff_data_dir, ff
                                                              lable_lst[1]: dir_co_norm_arr[1, :],
                                                              lable_lst[2]: dir_co_norm_arr[2, :],
                                                              lable_lst[3]: dir_cx_norm_arr[1, :]},
-                                        'color_list': ['r', 'k', 'b', 'k'],
-                                        'line_style': ['-', '-', '-', '--'],
+                                        'color_list': ['r', 'k', 'b', 'g'],
+                                        'line_style': ['-', '--', '-.', ':'],
                                         # 'marker': [None]*4,
                                         # 'marker_edge_color': None,
-                                        'line_width': 2
+                                        'line_width': 1.5
                                         }
 
         # Create data list, one data_dic for each subplot
         data_plot_cfg_dic_lst.append(data_plot_cfg_sim_radpat_dic)
 
+        # Create annotation text
+        anno_text_lst.append('D={0:.1f} {1}'.format(np.amax(peak_co_cvec), unit_str))
+
     x_label = 'Theta (deg)'
-    if pol_ind in ['LHCP', 'RHCP']:
-        y_label = 'Directivity (dBic)'
-    else:
-        y_label = 'Directivity (dBi)'
+    y_label = 'Normalized Magnitude (dB)'
     sub_titles = [sub_title for sub_title in ff_data_file_dic.keys()]
 
-    func_group_data_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol, x_label, y_label, sub_titles)
+    func_group_data_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol, x_label, y_label, sub_titles,
+                                 anno_text_lst)
 
 
 def func_group_data_subplot_polar_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol, sub_titles, fig_title=None):
