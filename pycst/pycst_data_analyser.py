@@ -331,6 +331,27 @@ class PyCstDataAnalyser:
         return freq_vec, s_mag_lin, s_mag_db
 
     @staticmethod
+    def func_meas_spara_data_proc(meas_data_folder, meas_spara_filename):
+        """
+        Process s-parameter data measured by Keysight PNA-X with OML mmWave head
+        """
+
+        # Get export S Para data file
+        meas_spara_filepath = os.path.join(meas_data_folder, meas_spara_filename)
+
+        # Load data
+        headerlin = 7
+        delimiter_str = ","
+        spara_data = np.genfromtxt(meas_spara_filepath, skip_header=headerlin, delimiter=delimiter_str)
+
+        # Parses data
+        freq_vec = spara_data[:, 0] / 1e9   # Convert to GHz
+        s_mag_db = spara_data[:, 1]
+        s_ph_deg = spara_data[:, 2]
+
+        return freq_vec, s_mag_db, s_ph_deg
+
+    @staticmethod
     def func_spara_objval_calc_maetrunc(export_folder, filename, goal_val, freq_range_vec, weight, norm_factor):
 
         # Get export S Para data file
