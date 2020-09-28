@@ -2,6 +2,7 @@ import os
 import numpy as np
 from collections import deque
 import matplotlib.pyplot as plt
+from scipy import interpolate
 # from matplotlib.patches import Ellipse
 
 import pycst_ctrl
@@ -323,6 +324,124 @@ def func_group_data_subplot_polar_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', prop={'size': 8})
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    plt.show()
+
+
+def func_3d_data_intpol(x_orig_vec, y_orig_vec, z_orig_arr, x_intpol_point_num, y_intpol_point_num):
+
+    # Get X and Y mesh grid
+    # Note that X-axis changes column-wise, Y-axis changes row-wise, in grid array when mapped to Z-axis grid array data
+    x_orig_arr, y_orig_arr = np.meshgrid(x_orig_vec, y_orig_vec)
+
+    # Get interpolated mesh grid
+    f = interpolate.interp2d(x_orig_arr, y_orig_arr, z_orig_arr, kind='cubic')
+
+    x_intpol_vec = np.linspace(x_orig_vec[0], x_orig_vec[-1], x_intpol_point_num)
+    y_intpol_vec = np.linspace(y_orig_vec[0], y_orig_vec[-1], y_intpol_point_num)
+    x_intpol_arr, y_intpol_arr = np.meshgrid(x_intpol_vec, y_intpol_vec)
+
+    z_intpol_arr = f(x_intpol_vec, y_intpol_vec)
+
+    return x_intpol_arr, y_intpol_arr, z_intpol_arr
+
+
+def func_data_pcolor_plot(ax, data_plot_cfg_dic, axes_cfg_dic):
+    """
+    :param ax: a single axes object
+    :param data_plot_cfg_dic:
+    data_plot_cfg_dic = {'x_grid_data_arr': ,
+                         'y_grid_data_arr': ,
+                         'z_grid_data_arr': ,
+                         'cmap': RdBu_r,
+                         'vmin': None,
+                         'vmax': None,
+                         'subtitle': None
+                        }
+    :param axes_cfg_dic:
+    axes_cfg_dic = {'xlim': None,
+                    'ylim': None,
+                    'xticks_vec': np.arange(),
+                    'yticks_vec': np.arange(),
+                    'annotation': None
+                    }
+    :return:
+    """
+
+    # Get x y and z data
+    x_grid_data_arr = data_plot_cfg_dic['x_grid_data_arr']
+    y_grid_data_arr = data_plot_cfg_dic['y_grid_data_arr']
+    z_grid_data_arr = data_plot_cfg_dic['z_grid_data_arr']
+
+    # Get plot configuration
+    cmap_str = data_plot_cfg_dic.get('cmap', 'RdBu_r')
+    vmin = data_plot_cfg_dic.get('vmin', np.amin(z_grid_data_arr))
+    vmax = data_plot_cfg_dic.get('vmax', np.amax(z_grid_data_arr))
+    subtitle_str = data_plot_cfg_dic.get('subtitle', None)
+
+    # Plot pcolor
+    pc = ax.pcolor(x_grid_data_arr, y_grid_data_arr, z_grid_data_arr, cmap=cmap_str, vmin=vmin, vmax=vmax)
+
+    if subtitle_str is not None:
+        ax.set_title(subtitle_str)
+
+    # Get axes configuration
+    xlim_lst = axes_cfg_dic.get('xlim', None)
+    ylim_lst = axes_cfg_dic.get('ylim', None)
+    xticks_vec = axes_cfg_dic.get('xticks_vec', None)
+    yticks_vec = axes_cfg_dic.get('yticks_vec', None)
+    annotation = axes_cfg_dic.get('annotation', None)
+
+    # Configure the axes
+    if xlim_lst is not None:
+        ax.set_xlim(xlim_lst[0], xlim_lst[1])
+    if ylim_lst is not None:
+        ax.set_ylim(ylim_lst[0], ylim_lst[1])
+    if xticks_vec is not None:
+        ax.set_xticks(xticks_vec)
+    if yticks_vec is not None:
+        ax.set_yticks(yticks_vec)
+
+    # Add annotation
+    if annotation is not None:
+        ax.add_artist(annotation)
+
+    # Return pcolor handle for adding color bar
+    return pc
+
+
+def func_group_data_pcolor_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol, x_label, y_label,
+                                        agg_cbar=False, inset_subtitles=None, anno_text_lst=None, fig_title=None):
+
+    # Create a figure
+    fig, axs = plt.subplots(nrow, ncol)
+
+    # Plot the group data
+    for index, ax in enumerate(axs.flat):
+        pc = func_data_pcolor_plot(ax, data_plot_cfg_dic_lst[index], axes_cfg_dic)
+
+        # Add color bar for each ax
+        if agg_cbar is not True:
+            fig.colorbar(pc, ax=ax, shrink=1)
+
+        # Config the figure
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.label_outer()
+
+        # Define appearance
+        if inset_subtitles is not None:
+            ax.text(-25, -43, inset_subtitles[index], fontsize=11, fontweight='bold')
+        if anno_text_lst is not None:
+            ax.text(axes_cfg_dic['xlim'][0]+10, -5, anno_text_lst[index], fontsize=8)
+        # ax.set_aspect('equal')
+
+    if agg_cbar is True:
+        fig.colorbar(pc, ax=axs, shrink=0.8, location='right')
+
+    if fig_title is not None:
+        fig.set_title(fig_title, fontweight='bold')
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+
     plt.show()
 
 
