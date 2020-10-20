@@ -119,6 +119,7 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
                          'line_style': ['--', '-'],
                          'marker': ['o', '^'],
                          'marker_edge_color': ['k', 'k'],
+                         'marker_face_color': ['k', 'k'],
                          'markevery': list[int]
                          'line_width': 2
                         }
@@ -153,6 +154,8 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
         marker_q = deque(data_plot_cfg_dic.get('marker', [None]*y_data_num))
         markevery = data_plot_cfg_dic.get('markevery', None)
         mec_q = deque(data_plot_cfg_dic.get('marker_edge_color', [None]*y_data_num))
+        mfc_q = deque(data_plot_cfg_dic.get('marker_face_color',
+                                            data_plot_cfg_dic.get('color_list', [None]*y_data_num)))
 
         # Plot all the data in data group
         for y_data_label, y_data_vec in y_data_group_dic.items():
@@ -160,8 +163,9 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
             line_style = line_style_q.popleft()
             marker = marker_q.popleft()
             mec = mec_q.popleft()
+            mfc = mfc_q.popleft()
             ax.plot(x_data_vec, y_data_vec, color=color, ls=line_style, lw=line_width, label=y_data_label,
-                    marker=marker, mec=mec, mfc=color, markevery=markevery)
+                    marker=marker, mec=mec, mfc=mfc, markevery=markevery)
 
     # Get axes configuration
     xlim_lst = axes_cfg_dic.get('xlim', None)
