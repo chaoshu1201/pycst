@@ -24,8 +24,14 @@ def func_meas_data_table_proc(data_table_dir, data_table_file_name):
     meas_dir_tot_db_norm_vec = meas_data_tbl["RadPadTotVec_dB_norm"].to_numpy()
     meas_dir_co_db_norm_vec = meas_data_tbl["RadPadCoVec_dB_norm"].to_numpy()
     meas_dir_cx_db_norm_vec = meas_data_tbl["RadPadCxVec_dB_norm"].to_numpy()
-    meas_dir_co_swap_db_norm_vec = meas_data_tbl["DirCoMeasSwap_dB_norm"].to_numpy()
-    meas_dir_cx_swap_db_norm_vec = meas_data_tbl["DirCxMeasSwap_dB_norm"].to_numpy()
+    if "DirCoMeasSwap_dB_norm" in meas_data_tbl.columns:
+        meas_dir_co_swap_db_norm_vec = meas_data_tbl["DirCoMeasSwap_dB_norm"].to_numpy()
+    else:
+        meas_dir_co_swap_db_norm_vec = None
+    if "DirCxMeasSwap_dB_norm" in meas_data_tbl.columns:
+        meas_dir_cx_swap_db_norm_vec = meas_data_tbl["DirCxMeasSwap_dB_norm"].to_numpy()
+    else:
+        meas_dir_cx_swap_db_norm_vec = None
     meas_xpd_db_vec = meas_data_tbl["XPD_Vec_dB"].to_numpy()
     meas_ell_ar_db_vec = meas_data_tbl["EllArVec_dB"].to_numpy()
 
