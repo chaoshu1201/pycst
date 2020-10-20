@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 from collections import deque
 import matplotlib.pyplot as plt
 from scipy import interpolate
@@ -7,6 +8,30 @@ from scipy import interpolate
 
 import pycst_ctrl
 from pycst_data_analyser import PyCstDataAnalyser
+
+
+def func_meas_data_table_proc(data_table_dir, data_table_file_name):
+
+    # Read measured data table created by matlab processing
+    data_table_file_path = os.path.join(data_table_dir, data_table_file_name)
+    meas_data_tbl = pd.read_csv(data_table_file_path)
+
+    # Parse the data
+    meas_theta_shift_vec = meas_data_tbl["MeasThetaShift"].to_numpy()
+    meas_dir_tot_db_vec = meas_data_tbl["RadPadTotVec_dB"].to_numpy()
+    meas_dir_co_db_vec = meas_data_tbl["RadPadCoVec_dB"].to_numpy()
+    meas_dir_cx_db_vec = meas_data_tbl["RadPadCxVec_dB"].to_numpy()
+    meas_dir_tot_db_norm_vec = meas_data_tbl["RadPadTotVec_dB_norm"].to_numpy()
+    meas_dir_co_db_norm_vec = meas_data_tbl["RadPadCoVec_dB_norm"].to_numpy()
+    meas_dir_cx_db_norm_vec = meas_data_tbl["RadPadCxVec_dB_norm"].to_numpy()
+    meas_dir_co_swap_db_norm_vec = meas_data_tbl["DirCoMeasSwap_dB_norm"].to_numpy()
+    meas_dir_cx_swap_db_norm_vec = meas_data_tbl["DirCxMeasSwap_dB_norm"].to_numpy()
+    meas_xpd_db_vec = meas_data_tbl["XPD_Vec_dB"].to_numpy()
+    meas_ell_ar_db_vec = meas_data_tbl["EllArVec_dB"].to_numpy()
+
+    return meas_theta_shift_vec, meas_dir_tot_db_vec, meas_dir_co_db_vec, meas_dir_cx_db_vec, meas_dir_tot_db_norm_vec,\
+        meas_dir_co_db_norm_vec, meas_dir_cx_db_norm_vec, meas_dir_co_swap_db_norm_vec, meas_dir_cx_swap_db_norm_vec, \
+        meas_xpd_db_vec, meas_ell_ar_db_vec
 
 
 def func_cst_exp_acii_data_proc(exp_data_dir, exp_file_name):
@@ -171,7 +196,8 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
         ax.add_artist(annotation)
 
 
-def func_group_data_show(data_plot_cfg_dic_lst, axes_cfg_dic, x_label, y_label, fig_title=None, figsize=None):
+def func_group_data_show(data_plot_cfg_dic_lst, axes_cfg_dic, x_label, y_label, fig_title=None, figsize=None,
+                         anno_text=None, anno_text_pos_lst=None):
 
     # Create a figure
     fig, ax = plt.subplots(figsize=figsize)
@@ -184,6 +210,9 @@ def func_group_data_show(data_plot_cfg_dic_lst, axes_cfg_dic, x_label, y_label, 
     ax.set_ylabel(y_label)
     if fig_title is not None:
         ax.set_title(fig_title, fontweight='bold')
+
+    if anno_text is not None:
+        ax.text(anno_text_pos_lst[0], anno_text_pos_lst[1], anno_text, fontsize=10)
 
     # Define appearance
     func_matlab_style(ax)
@@ -477,6 +506,81 @@ def func_double_yaxis_data_show(data1_plot_cfg_data_dic_lst, data2_plot_cfg_data
     # plt.show()
 
     return fig, ax1, ax2
+
+
+def func_double_yaxis_data_plot(ax, data_plot_cfg_data_dic_lst,
+                                ax_cfg_dic_lst,
+                                x_label=None, y1_label=None, y2_label=None):
+
+    # Get 1st ax
+    ax1 = ax
+
+    # Plot data1
+    func_group_data_plot(ax1, data_plot_cfg_data_dic_lst[0], ax_cfg_dic_lst[0])
+
+    # Config ax1
+    ax1.set_xlabel(x_label)
+    # ax1.set_ylabel(y1_label, color='k')
+    # ax1.tick_params(axis='y', labelcolor='k')
+    func_matlab_style(ax1)
+
+    # Create the 2nd axes
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+    # Plot data 2
+    func_group_data_plot(ax2, data_plot_cfg_data_dic_lst[1], ax_cfg_dic_lst[1])
+
+    # Config ax2
+    # ax2.set_ylabel(y2_label, color='k')  # we already handled the x-label with ax1
+    # ax2.tick_params(axis='y', labelcolor='k')
+
+    return ax1, ax2
+
+
+def func_double_yaxis_data_subplot_show(data_plot_cfg_dic_nlst, axes_cfg_dic_lst,
+                                        nrow, ncol, x_label, y1_label, y2_label,
+                                        sub_titles=None, anno_text_lst=None, fig_title_lst=None):
+
+    # Create a figure
+    fig, axs = plt.subplots(nrow, ncol)
+
+    # Plot the double-axis data for each subplot
+    for index, ax in enumerate(axs.flat):
+        ax1, ax2 = func_double_yaxis_data_plot(ax, data_plot_cfg_dic_nlst[index], axes_cfg_dic_lst, x_label, y1_label, y2_label)
+
+        # Config the figure
+        if index == 0:
+            ax1.set_ylabel(y1_label, color='k')
+            ax2.label_outer()   # It seems label_outer() doesn't work for ax2, so I remove ytick labels manually
+            ax2.set_yticklabels([])
+        elif index == (ncol - 1):
+            ax2.set_ylabel(y2_label, color='k')
+            ax1.label_outer()
+
+        ax1.get_legend().remove()    # Remove individual legend for each subplot
+        ax2.get_legend().remove()    # Remove individual legend for each subplot
+        # ax1.label_outer()
+        # ax2.label_outer()
+
+        # Define appearance
+        func_matlab_style(ax)
+
+        if fig_title_lst is not None:
+            ax.set_title(fig_title_lst[index], fontweight='bold')
+        if sub_titles is not None:
+            ax.text(-25, -43, sub_titles[index], fontsize=11, fontweight='bold')
+        if anno_text_lst is not None:
+            ax.text(axes_cfg_dic_lst[0]['xlim'][0]+10, -5, anno_text_lst[index], fontsize=8)
+        # ax.set_aspect('equal')
+
+    ax1_handles, ax1_labels = ax1.get_legend_handles_labels()
+    ax2_handles, ax2_labels = ax2.get_legend_handles_labels()
+    handles = ax1_handles + ax2_handles
+    labels = ax1_labels + ax2_labels
+    fig.legend(handles, labels, ncol=4, loc='lower center', prop={'size': 8})
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    plt.show()
 
 
 def func_norm_radiation_pattern_freq_sim_show(ff_data_dir, ff_file_name, np_theta, np_phi, axes_cfg_dic, freq_str,
