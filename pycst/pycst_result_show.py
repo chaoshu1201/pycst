@@ -346,7 +346,10 @@ def func_group_data_subplot_polar_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow
 
     # Plot the group data
     for index, ax in enumerate(axs.flat):
-        func_group_data_plot(ax, [data_plot_cfg_dic_lst[index]], axes_cfg_dic, projection='polar')
+        if type(data_plot_cfg_dic_lst[index]) is dict:
+            func_group_data_plot(ax, [data_plot_cfg_dic_lst[index]], axes_cfg_dic, projection='polar')
+        else:   # More than 1 set of data in each subplot
+            func_group_data_plot(ax, data_plot_cfg_dic_lst[index], axes_cfg_dic, projection='polar')
 
         # Config the figure
         ax.get_legend().remove()    # Remove individual legend for each subplot
