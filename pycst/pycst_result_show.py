@@ -10,6 +10,16 @@ import pycst_ctrl
 from pycst_data_analyser import PyCstDataAnalyser
 
 
+def trim_axs(axs, n):
+    """
+    Reduce *axs* to *N* Axes. All further Axes are removed from the figure.
+    """
+    axs = axs.flat
+    for ax in axs[n:]:
+        ax.remove()
+    return axs[:n]
+
+
 def func_meas_data_table_proc(data_table_dir, data_table_file_name):
 
     # Read measured data table created by matlab processing
@@ -133,6 +143,8 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
     axes_cfg_dic = {'xlim': [0, 10],    # Only for projection=rectilinear
                     'ylim': [0, 10],    # Only for projection=rectilinear
                     'rlim': [0, 10],    # Only for projection=polar
+                    'theta_zero_loc': 'E',    # Only for projection=polar
+                    'theta_dir': 1,    # 1: anti-clockwise; -1: clockwise  Only for projection=polar
                     'yticks_vec': np.arange(),  # Only for projection=rectilinear
                     'rticks_vec': np.arange(),  # Only for projection=polar
                     'legend_loc': 'best',
@@ -181,6 +193,8 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
     annotation = axes_cfg_dic.get('annotation', None)
     yticks_vec = axes_cfg_dic.get('yticks_vec', None)
     rticks_vec = axes_cfg_dic.get('rticks_vec', None)
+    theta_zero_loc = axes_cfg_dic.get('theta_zero_loc', 'N')
+    theta_dir = axes_cfg_dic.get('theta_dir', -1)
 
     # Configure the axes
     if xlim_lst is not None:
@@ -195,8 +209,8 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
         ax.set_rticks(rticks_vec)
 
     if 'polar' == projection:
-        ax.set_theta_zero_location('N')
-        ax.set_theta_direction(-1)      # clockwise
+        ax.set_theta_zero_location(theta_zero_loc)
+        ax.set_theta_direction(theta_dir)      # -1: clockwise
 
     # Add legends
     ax.legend(loc=legend_loc)
@@ -343,6 +357,9 @@ def func_group_data_subplot_polar_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow
                             gridspec_kw={'wspace': 0.4, 'hspace': 0.3,
                                          'top': 0.95, 'bottom': 0.05, 'left': 0.05, 'right': 0.95},
                             figsize=(ncol, nrow))
+
+    # trim axes if number of axes is more than number of list elements
+    axs = trim_axs(axs, len(data_plot_cfg_dic_lst))
 
     # Plot the group data
     for index, ax in enumerate(axs.flat):
