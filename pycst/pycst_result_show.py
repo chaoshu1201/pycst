@@ -147,6 +147,9 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
                     'theta_dir': 1,    # 1: anti-clockwise; -1: clockwise  Only for projection=polar
                     'yticks_vec': np.arange(),  # Only for projection=rectilinear
                     'rticks_vec': np.arange(),  # Only for projection=polar
+                    'fontsize_label': 14,
+                    'fontsize_legend': 12,
+                    'fontsize_anno_text': 14,
                     'legend_loc': 'best',
                     'annotation': None
                     }
@@ -195,6 +198,7 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
     rticks_vec = axes_cfg_dic.get('rticks_vec', None)
     theta_zero_loc = axes_cfg_dic.get('theta_zero_loc', 'N')
     theta_dir = axes_cfg_dic.get('theta_dir', -1)
+    fontsize_legend = axes_cfg_dic.get('fontsize_legend', 12)
 
     # Configure the axes
     if xlim_lst is not None:
@@ -213,7 +217,7 @@ def func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic, projection='re
         ax.set_theta_direction(theta_dir)      # -1: clockwise
 
     # Add legends
-    ax.legend(loc=legend_loc)
+    ax.legend(loc=legend_loc, fontsize=fontsize_legend)
 
     # Add annotation
     if annotation is not None:
@@ -230,13 +234,15 @@ def func_group_data_show(data_plot_cfg_dic_lst, axes_cfg_dic, x_label, y_label, 
     func_group_data_plot(ax, data_plot_cfg_dic_lst, axes_cfg_dic)
 
     # Config the figure
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
+    fontsize_label = axes_cfg_dic.get('fontsize_label', 14)
+    ax.set_xlabel(x_label, fontsize=fontsize_label)
+    ax.set_ylabel(y_label, fontsize=fontsize_label)
     if fig_title is not None:
         ax.set_title(fig_title, fontweight='bold')
 
     if anno_text is not None:
-        ax.text(anno_text_pos_lst[0], anno_text_pos_lst[1], anno_text, fontsize=10)
+        fontsize_anno_text = axes_cfg_dic.get('fontsize_anno_text', 14)
+        ax.text(anno_text_pos_lst[0], anno_text_pos_lst[1], anno_text, fontsize=fontsize_anno_text)
 
     # Define appearance
     func_matlab_style(ax)
@@ -246,10 +252,19 @@ def func_group_data_show(data_plot_cfg_dic_lst, axes_cfg_dic, x_label, y_label, 
 
 
 def func_group_data_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol, x_label, y_label, sub_titles,
-                                 anno_text_lst=None, fig_title=None):
+                                 anno_text_lst=None, fig_title=None, fig_size=None, subplot_fit_rect=None):
+
+    """
+    Parameters
+    ----------
+    subplot_fit_rect: tuple of 4 floats, optional
+        (left, bottom, right, top) rectangle in normalized figure
+        coordinates that the whole subplots area (including labels) will
+        fit into.  Default is (0, 0, 1, 1). see 'rect' in figure.tight_layout()
+    """
 
     # Create a figure
-    fig, axs = plt.subplots(nrow, ncol)
+    fig, axs = plt.subplots(nrow, ncol, figsize=fig_size)
 
     # Plot the group data
     for index, ax in enumerate(axs.flat):
@@ -272,12 +287,12 @@ def func_group_data_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol
 
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels, ncol=4, loc='lower center', prop={'size': 8})
-    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    fig.tight_layout(rect=subplot_fit_rect)  # otherwise the right y-label is slightly clipped
     plt.show()
 
 
 def func_cst_radpat_cocx_subplot_show(np_theta, np_phi, pol_ind, ff_data_dir, ff_data_file_dic, nrow, ncol,
-                                      axes_cfg_dic):
+                                      axes_cfg_dic, fig_size=None, subplot_fit_rect=None):
     """
     This function is used to plot radiation patterns with co-pol and cx-pol
     :param np_theta: number of sample points for theta, normally 360
@@ -347,7 +362,7 @@ def func_cst_radpat_cocx_subplot_show(np_theta, np_phi, pol_ind, ff_data_dir, ff
     sub_titles = [sub_title for sub_title in ff_data_file_dic.keys()]
 
     func_group_data_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol, x_label, y_label, sub_titles,
-                                 anno_text_lst)
+                                 anno_text_lst, fig_size=fig_size, subplot_fit_rect=subplot_fit_rect)
 
 
 def func_group_data_subplot_polar_show(data_plot_cfg_dic_lst, axes_cfg_dic, nrow, ncol, sub_titles, fig_title=None):
@@ -483,8 +498,9 @@ def func_group_data_pcolor_subplot_show(data_plot_cfg_dic_lst, axes_cfg_dic, nro
             fig.colorbar(pc, ax=ax, shrink=1)
 
         # Config the figure
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
+        fontsize_label = axes_cfg_dic.get('fontsize_label', 14)
+        ax.set_xlabel(x_label, fontsize=fontsize_label)
+        ax.set_ylabel(y_label, fontsize=fontsize_label)
         ax.label_outer()
 
         # Define appearance
@@ -515,8 +531,9 @@ def func_double_yaxis_data_show(data1_plot_cfg_data_dic_lst, data2_plot_cfg_data
     func_group_data_plot(ax1, data1_plot_cfg_data_dic_lst, ax1_cfg_dic)
 
     # Config ax1
-    ax1.set_xlabel(x_label)
-    ax1.set_ylabel(y1_label, color='k')
+    fontsize_label = ax1_cfg_dic.get('fontsize_label', 14)
+    ax1.set_xlabel(x_label, fontsize=fontsize_label)
+    ax1.set_ylabel(y1_label, color='k', fontsize=fontsize_label)
     # ax1.tick_params(axis='y', labelcolor='k')
     func_matlab_style(ax1)
 
@@ -527,7 +544,8 @@ def func_double_yaxis_data_show(data1_plot_cfg_data_dic_lst, data2_plot_cfg_data
     func_group_data_plot(ax2, data2_plot_cfg_data_dic_lst, ax2_cfg_dic)
 
     # Config ax2
-    ax2.set_ylabel(y2_label, color='k')  # we already handled the x-label with ax1
+    fontsize_label = ax2_cfg_dic.get('fontsize_label', 14)
+    ax2.set_ylabel(y2_label, color='k', fontsize=fontsize_label)  # we already handled the x-label with ax1
     # ax2.tick_params(axis='y', labelcolor='k')
 
     if fig_title is not None:
@@ -549,7 +567,8 @@ def func_double_yaxis_data_plot(ax, data_plot_cfg_data_dic_lst,
     func_group_data_plot(ax1, data_plot_cfg_data_dic_lst[0], ax_cfg_dic_lst[0])
 
     # Config ax1
-    ax1.set_xlabel(x_label)
+    fontsize_label = ax_cfg_dic_lst[0].get('fontsize_label', 14)
+    ax1.set_xlabel(x_label, fontsize=fontsize_label)
     # ax1.set_ylabel(y1_label, color='k')
     # ax1.tick_params(axis='y', labelcolor='k')
     func_matlab_style(ax1)
@@ -569,22 +588,37 @@ def func_double_yaxis_data_plot(ax, data_plot_cfg_data_dic_lst,
 
 def func_double_yaxis_data_subplot_show(data_plot_cfg_dic_nlst, axes_cfg_dic_lst,
                                         nrow, ncol, x_label, y1_label, y2_label,
-                                        sub_titles=None, anno_text_lst=None, fig_title_lst=None):
+                                        sub_titles=None, anno_text_lst=None, fig_title_lst=None,
+                                        fig_size=None, subplot_fit_rect=None):
+
+    """
+    Adjust subplot parameters to give specified padding.
+
+    Parameters
+    ----------
+    subplot_fit_rect: tuple of 4 floats, optional
+        (left, bottom, right, top) rectangle in normalized figure
+        coordinates that the whole subplots area (including labels) will
+        fit into.  Default is (0, 0, 1, 1). see 'rect' in figure.tight_layout()
+    """
 
     # Create a figure
-    fig, axs = plt.subplots(nrow, ncol)
+    fig, axs = plt.subplots(nrow, ncol, figsize=fig_size)
 
     # Plot the double-axis data for each subplot
     for index, ax in enumerate(axs.flat):
-        ax1, ax2 = func_double_yaxis_data_plot(ax, data_plot_cfg_dic_nlst[index], axes_cfg_dic_lst, x_label, y1_label, y2_label)
+        ax1, ax2 = func_double_yaxis_data_plot(ax, data_plot_cfg_dic_nlst[index], axes_cfg_dic_lst,
+                                               x_label, y1_label, y2_label)
 
         # Config the figure
         if index == 0:
-            ax1.set_ylabel(y1_label, color='k')
+            fontsize_label = axes_cfg_dic_lst[0].get('fontsize_label', 14)
+            ax1.set_ylabel(y1_label, color='k', fontsize=fontsize_label)
             ax2.label_outer()   # It seems label_outer() doesn't work for ax2, so I remove ytick labels manually
             ax2.set_yticklabels([])
         elif index == (ncol - 1):
-            ax2.set_ylabel(y2_label, color='k')
+            fontsize_label = axes_cfg_dic_lst[1].get('fontsize_label', 14)
+            ax2.set_ylabel(y2_label, color='k', fontsize=fontsize_label)
             ax1.label_outer()
 
         ax1.get_legend().remove()    # Remove individual legend for each subplot
@@ -607,9 +641,10 @@ def func_double_yaxis_data_subplot_show(data_plot_cfg_dic_nlst, axes_cfg_dic_lst
     ax2_handles, ax2_labels = ax2.get_legend_handles_labels()
     handles = ax1_handles + ax2_handles
     labels = ax1_labels + ax2_labels
-    fig.legend(handles, labels, ncol=4, loc='lower center', prop={'size': 8})
+    fontsize_legend = axes_cfg_dic_lst[0].get('fontsize_legend', 12)
+    fig.legend(handles, labels, ncol=4, loc='lower center', prop={'size': fontsize_legend})
 
-    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    fig.tight_layout(rect=subplot_fit_rect)  # otherwise the right y-label is slightly clipped
     plt.show()
 
 
